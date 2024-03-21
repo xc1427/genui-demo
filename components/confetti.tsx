@@ -2,11 +2,11 @@
 import JSConfetti from "js-confetti";
 import { useEffect } from "react";
 
-export function Confetti() {
+export function Confetti({ message }: { message?:string }) {
   useEffect(() => {
     const jsConfetti = new JSConfetti();
     jsConfetti.addConfetti();
   }, []);
 
-  return "Here you go 🎉!";
+  return message || "Here you go 🎉!";
 }

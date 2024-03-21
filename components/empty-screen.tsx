@@ -4,6 +4,10 @@ import { IconArrowRight } from "@/components/ui/icons";
 
 const exampleMessages = [
   {
+    heading: 'Show my Zan profile',
+    message: 'Show my Zan profile',
+  },
+  {
     heading: "Play pacman",
     message: "Play pacman",
   },

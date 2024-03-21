@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { useUIState, useActions, useAIState } from 'ai/rsc';
-import { UserMessage } from '@/components/llm-stocks/message';
+import { BotCard, UserMessage } from '@/components/llm-stocks/message';
 
 import { type AI } from './action';
 import { ChatScrollAnchor } from '@/lib/hooks/chat-scroll-anchor';
@@ -20,9 +20,19 @@ import { Button } from '@/components/ui/button';
 import { ChatList } from '@/components/chat-list';
 import { EmptyScreen } from '@/components/empty-screen';
 import { toast } from '@/components/ui/use-toast';
+import { ZanProfileDemo } from '@/components/zan-profile-demo';
+import { ZanProfile } from '@/components/zan-profile';
+
+const mockInitialMessages = [
+  {
+    id: Date.now(),
+    display: <ZanProfileDemo />,
+  },
+] satisfies Array<{ id: number; display: React.ReactNode }>;
 
 export default function Page() {
   const [messages, setMessages] = useUIState<typeof AI>();
+ 
   const { submitUserMessage } = useActions();
   const [inputValue, setInputValue] = useState('');
   const { formRef, onKeyDown } = useEnterSubmit();
@@ -52,9 +62,14 @@ export default function Page() {
     };
   }, [inputRef]);
 
+  //  useEffect(() => {
+  //   setMessages(mockInitialMessages);
+  // }, []);
+
   return (
     <div>
       <div className="pb-[200px] pt-4 md:pt-10">
+        {/* {true ? ( */}
         {messages.length ? (
           <>
             <ChatList messages={messages} />

@@ -1,5 +1,5 @@
 import "server-only";
-
+// import { fetch } from 'undici';
 import { createAI, createStreamableUI, getMutableAIState } from "ai/rsc";
 import OpenAI from "openai";
 
@@ -28,10 +28,97 @@ import { EventsSkeleton } from "@/components/llm-stocks/events-skeleton";
 import { StocksSkeleton } from "@/components/llm-stocks/stocks-skeleton";
 import { messageRateLimit } from "@/lib/rate-limit";
 import { headers } from "next/headers";
+import { ZanProfile } from "@/components/zan-profile";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "",
 });
+
+async function confirmProfileUpdate(firstName: string, lastName: string) {
+  'use server';
+  const aiState = getMutableAIState<typeof AI>();
+  const updating = createStreamableUI(
+    <div className="inline-flex items-start gap-1 md:items-center">
+      {spinner}
+      <p className="mb-2">
+        Updating your profile. Please wait ...
+      </p>
+    </div>,
+  );
+
+  const systemMessage = createStreamableUI(null);
+
+
+  runAsyncFnWithoutBlocking(async () => {
+    const requestBody = JSON.stringify({ personInfo: { firstName, lastName }, userType: null });
+    console.info('requestBody', requestBody);
+    await sleep(2000);
+    const res = await fetch("https://zan.top/v1/api/account/improve-info", {
+      "headers": {
+        "accept": "application/json, text/plain, */*",
+        "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,zh-TW;q=0.6,fr-FR;q=0.5,fr;q=0.4",
+        "authorization": `Bearer ${process.env.DEMO_JWT}`,
+        "cache-control": "no-cache",
+        "content-type": "application/json",
+        "sec-ch-ua": "\"Chromium\";v=\"122\", \"Not(A:Brand\";v=\"24\", \"Google Chrome\";v=\"122\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"macOS\"",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin"
+      },
+      "body": requestBody,
+      "referrer": "https://zan.top/personal/account/",
+      "referrerPolicy": "strict-origin-when-cross-origin",
+      "method": "POST",
+      "mode": "cors",
+      "credentials": "include"
+    });
+    const resJson = await res.json() as any;
+    console.info('improve-info resJson', resJson);
+    if (!resJson.success) {
+      updating.done(
+        <div className="inline-flex items-start gap-1 md:items-center">
+          <p className="mb-2">
+            Update failed 😱
+          </p>
+        </div>,
+      );
+
+      systemMessage.done(
+        <SystemMessage>
+          Profile update failed. Reason is {resJson?.errorMessage?.displayedMessage}
+        </SystemMessage>
+      );
+    } else {
+      updating.done(
+        <Confetti message="Profile updated! 🚀" />
+      );
+  
+      systemMessage.done(
+        <SystemMessage>
+          You have successfuly updated your Zan profile.
+        </SystemMessage>
+      );
+    }
+   
+    aiState.done([
+      ...aiState.get(),
+      {
+        role: "system",
+        content: `[User has updated his Zan profile]`,
+      },
+    ]);
+  });
+
+  return {
+    updatingUI: updating.value,
+    newMessage: {
+      id: Date.now(),
+      display: systemMessage.value,
+    },
+  };
+}
 
 async function confirmPurchase(symbol: string, price: number, amount: number) {
   "use server";
@@ -84,9 +171,8 @@ async function confirmPurchase(symbol: string, price: number, amount: number) {
       ...aiState.get(),
       {
         role: "system",
-        content: `[User has purchased ${amount} shares of ${symbol} at ${price}. Total cost = ${
-          amount * price
-        }]`,
+        content: `[User has purchased ${amount} shares of ${symbol} at ${price}. Total cost = ${amount * price
+          }]`,
       },
     ]);
   });
@@ -108,17 +194,17 @@ async function submitUserMessage(content: string) {
   );
 
   const ip = headers().get("x-real-ip") ?? "local";
-  const rl = await messageRateLimit.limit(ip);
+  // const rl = await messageRateLimit.limit(ip);
 
-  if (!rl.success) {
-    reply.done(
-      <BotMessage>Rate limit exceeded. Try again in 15 minutes.</BotMessage>,
-    );
-    return {
-      id: Date.now(),
-      display: reply.value,
-    };
-  }
+  // if (!rl.success) {
+  //   reply.done(
+  //     <BotMessage>Rate limit exceeded. Try again in 15 minutes.</BotMessage>,
+  //   );
+  //   return {
+  //     id: Date.now(),
+  //     display: reply.value,
+  //   };
+  // }
 
   const aiState = getMutableAIState<typeof AI>();
   aiState.update([
@@ -301,12 +387,63 @@ Besides that, you can also chat with users and do some calculations if needed.`,
     ]);
   });
 
-  completion.onFunctionCall("show_zan_profile", () => {
+  completion.onFunctionCall("show_zan_profile", async () => {
+    const res = await fetch("https://zan.top/v1/api/account/info", {
+      "headers": {
+        "accept": "application/json, text/plain, */*",
+        "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,zh-TW;q=0.6,fr-FR;q=0.5,fr;q=0.4",
+        "authorization": `Bearer ${process.env.DEMO_JWT}`,
+        "cache-control": "no-cache",
+        "sec-ch-ua": "\"Chromium\";v=\"122\", \"Not(A:Brand\";v=\"24\", \"Google Chrome\";v=\"122\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"macOS\"",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin"
+      },
+      "referrer": "https://zan.top/personal/account/",
+      "body": null,
+      "method": "GET",
+      // "mode": "cors",
+      "credentials": "include"
+    });
+
+    const resJson = await res.json() as any;
+    console.info('account/info resJson', resJson);
+    if (!resJson.success) {
+      reply.done(
+        <BotMessage>
+          {resJson?.errorMessage?.displayedMessage}
+        </BotMessage>
+        
+      );
+      aiState.done([
+        ...aiState.get(),
+        {
+          role: "function",
+          name: "show_zan_profile",
+          content: `[Invalid request]`,
+        },
+      ]);
+      return;
+    }
+    
+    const names = resJson.data.personInfo;
+
     reply.done(
-      <BotMessage>
-        wip
-      </BotMessage>
+      <BotCard>
+        <ZanProfile {...names} />
+      </BotCard>
     );
+
+    aiState.done([
+      ...aiState.get(),
+      {
+        role: 'function',
+        name: 'show_zan_profile',
+        content: `[User has requested to display his Zan profile]`,
+      },
+    ]);
   });
 
   completion.onFunctionCall("play_pacman", () => {
@@ -439,6 +576,7 @@ export const AI = createAI({
   actions: {
     submitUserMessage,
     confirmPurchase,
+    confirmProfileUpdate,
   },
   initialUIState,
   initialAIState,
