@@ -145,6 +145,7 @@ Messages inside [] means that it's a UI element or a user event. For example:
 - "[Price of AAPL = 100]" means that an interface of the stock price of AAPL is shown to the user.
 - "[User has changed the amount of AAPL to 10]" means that the user has changed the amount of AAPL to 10 in the UI.
 
+If the user requests show his Zan profile, call \`show_zan_profile\` to show the Zan profile UI.
 If the user requests playing pacman, call \`play_pacman\` to play pacman.
 If the user requests throwing confetti, call \`throw_confetti\` to throw confetti.
 If the user requests purchasing a stock, call \`show_stock_purchase_ui\` to show the purchase UI.
@@ -162,6 +163,11 @@ Besides that, you can also chat with users and do some calculations if needed.`,
       })),
     ],
     functions: [
+      {
+        name: 'show_zan_profile',
+        description: 'Show Zan profile of the user',
+        parameters: z.object({}),
+      },
       {
         name: "play_pacman",
         description: "Play pacman with the user.",
@@ -293,6 +299,14 @@ Besides that, you can also chat with users and do some calculations if needed.`,
         content: JSON.stringify(events),
       },
     ]);
+  });
+
+  completion.onFunctionCall("show_zan_profile", () => {
+    reply.done(
+      <BotMessage>
+        wip
+      </BotMessage>
+    );
   });
 
   completion.onFunctionCall("play_pacman", () => {
