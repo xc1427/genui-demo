@@ -29,6 +29,7 @@ import { StocksSkeleton } from "@/components/llm-stocks/stocks-skeleton";
 import { messageRateLimit } from "@/lib/rate-limit";
 import { headers } from "next/headers";
 import { ZanProfile } from "@/components/zan-profile";
+import { ZanProfileAntd } from "@/components/zan-profile-antd";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "",
@@ -252,7 +253,9 @@ Besides that, you can also chat with users and do some calculations if needed.`,
       {
         name: 'show_zan_profile',
         description: 'Show Zan profile of the user',
-        parameters: z.object({}),
+        parameters: z.object({
+          theme: z.string().describe('the visual style of the Zan profile. e.g., default/antd'),
+        }),
       },
       {
         name: "play_pacman",
@@ -387,7 +390,8 @@ Besides that, you can also chat with users and do some calculations if needed.`,
     ]);
   });
 
-  completion.onFunctionCall("show_zan_profile", async () => {
+  completion.onFunctionCall("show_zan_profile", async (arg) => {
+    console.log('show_zan_profile arg', arg);
     const res = await fetch("https://zan.top/v1/api/account/info", {
       "headers": {
         "accept": "application/json, text/plain, */*",
@@ -429,7 +433,13 @@ Besides that, you can also chat with users and do some calculations if needed.`,
     }
     
     const names = resJson.data.personInfo;
-
+    if (arg.theme === 'antd') {
+      reply.done(
+        <BotCard>
+        <ZanProfileAntd {...names} />
+      </BotCard>
+      );
+    }
     reply.done(
       <BotCard>
         <ZanProfile {...names} />

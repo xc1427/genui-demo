@@ -8,6 +8,7 @@ import './globals.css';
 import { AI } from './action';
 import { Header } from '@/components/header';
 import { Providers } from '@/components/providers';
+import { AntdRegistry } from '@ant-design/nextjs-registry';
 
 const meta = {
   title: 'AI RSC Demo',
@@ -55,6 +56,7 @@ export default function RootLayout({
         className={`font-sans antialiased ${GeistSans.variable} ${GeistMono.variable}`}
       >
         <Toaster />
+        <AntdRegistry>
         <AI>
           <Providers
             attribute="class"
@@ -70,6 +72,8 @@ export default function RootLayout({
             </div>
           </Providers>
         </AI>
+        </AntdRegistry>
+        
         <Analytics />
       </body>
     </html>

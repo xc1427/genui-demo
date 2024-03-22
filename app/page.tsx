@@ -22,6 +22,7 @@ import { EmptyScreen } from '@/components/empty-screen';
 import { toast } from '@/components/ui/use-toast';
 import { ZanProfileDemo } from '@/components/zan-profile-demo';
 import { ZanProfile } from '@/components/zan-profile';
+import { Button as AntButton } from 'antd';
 
 const mockInitialMessages = [
   {
@@ -62,7 +63,7 @@ export default function Page() {
     };
   }, [inputRef]);
 
-  //  useEffect(() => {
+  // useEffect(() => {
   //   setMessages(mockInitialMessages);
   // }, []);
 
