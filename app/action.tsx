@@ -93,7 +93,7 @@ async function confirmProfileUpdate(firstName: string, lastName: string) {
       );
     } else {
       updating.done(
-        <Confetti message="Profile updated! 🚀" />
+        <Confetti message="Profile updated 🚀!" />
       );
   
       systemMessage.done(
