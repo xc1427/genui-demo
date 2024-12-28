@@ -57,21 +57,21 @@ export default function RootLayout({
       >
         <Toaster />
         <AntdRegistry>
-        <AI>
-          <Providers
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <div className="flex flex-col min-h-screen">
-              <Header />
-              <main className="flex flex-col flex-1 bg-muted/50 dark:bg-background">
-                {children}
-              </main>
-            </div>
-          </Providers>
-        </AI>
+          <AI>
+            <Providers
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <div className="flex flex-col min-h-screen">
+                <Header />
+                <main className="flex flex-col flex-1 bg-muted/50 dark:bg-background">
+                  {children}
+                </main>
+              </div>
+            </Providers>
+          </AI>
         </AntdRegistry>
         
         <Analytics />
